@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vedic Rashifal Studio (Pure Chroma - Fixed PPTX)</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0b1020;
+      --panel: #151c33;
+      --accent: #f5b942;
+      --text: #f8fafc;
+      --chroma-green: #00ff00;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', 'Nirmala UI', 'Noto Sans Devanagari', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      padding: 18px;
+    }
+    .controls {
+      max-width: 1200px;
+      margin: 0 auto 22px;
+      background: var(--panel);
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(245, 185, 66, 0.25);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .control-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    label {
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    input[type="file"], select, button {
+      background: #1f2947;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button.primary {
+      background: linear-gradient(135deg, #f5b942, #d97706);
+      color: #111827;
+      font-weight: 700;
+      border: none;
+    }
+    button.secondary {
+      background: #2563eb;
+      border: none;
+      font-weight: 600;
+    }
+    button:hover { opacity: 0.92; }
+
+    .slides-wrapper {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      justify-content: center;
+    }
+
+    .slide-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .slide {
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 2px solid #ffffff;
+      background: var(--chroma-green);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* Aspect Ratios */
+    .ratio-16-9 .slide {
+      width: 680px;
+      height: 382px;
+    }
+    .ratio-9-16 .slide {
+      width: 380px;
+      height: 675px;
+      padding: 24px 16px;
+    }
+
+    .slide-content {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .chroma-text {
+      text-shadow:
+        -2px -2px 0 #000,
+         2px -2px 0 #000,
+        -2px  2px 0 #000,
+         2px  2px 0 #000,
+         0px  4px 8px rgba(0, 0, 0, 0.9);
+    }
+
+    .date-badge {
+      color: #fff3b0;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 0.4px;
+    }
+    .ratio-9-16 .date-badge {
+      font-size: 21px;
+    }
+
+    .rashi-title {
+      font-size: 34px;
+      font-weight: 900;
+      color: #ffd166;
+      margin: 0;
+    }
+    .ratio-9-16 .rashi-title { font-size: 32px; }
+
+    .points-box {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.4;
+      color: #ffffff;
+      padding: 4px 8px;
+    }
+    .ratio-9-16 .points-box {
+      font-size: 18px;
+      gap: 12px;
+    }
+    .point-row strong {
+      color: #ffd166;
+    }
+
+    .upay-box {
+      width: 100%;
+      font-size: 16.5px;
+      font-weight: 800;
+      color: #fef08a;
+      line-height: 1.4;
+      padding: 4px 8px;
+    }
+    .ratio-9-16 .upay-box {
+      font-size: 17.5px;
+    }
+
+    .lucky-row {
+      display: flex;
+      gap: 18px;
+      justify-content: center;
+      flex-wrap: wrap;
+      font-size: 18px;
+      font-weight: 900;
+      color: #ffffff;
+      margin-top: 4px;
+    }
+
+    .summary-section {
+      width: 100%;
+      padding: 6px 10px;
+    }
+    .summary-section h3 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      font-weight: 900;
+      color: #ffd166;
+    }
+    .summary-section p {
+      margin: 0;
+      font-size: 21px;
+      line-height: 1.45;
+      color: #ffffff;
+      font-weight: 800;
+    }
+
+    .copy-btn {
+      font-size: 13px;
+      padding: 6px 14px;
+      background: #1e293b;
+      border: 1px solid rgba(245, 185, 66, 0.4);
+      color: #fde68a;
+      border-radius: 8px;
+    }
+    .copy-btn:hover { background: #334155; }
+  </style>
+</head>
+<body class="ratio-16-9">
+
+  <div class="controls">
+    <div class="control-group">
+      <div>
+        <label>1. Excel File:</label>
+        <input type="file" id="excelInput" accept=".xlsx,.xls,.csv" />
+      </div>
+      <div>
+        <label>2. Date:</label>
+        <select id="dateSelect" disabled><option>Select Excel First</option></select>
+      </div>
+      <div>
+        <label>3. Size:</label>
+        <select id="ratioSelect">
+          <option value="16-9">16:9 (YouTube)</option>
+          <option value="9-16">9:16 (Shorts / Reels)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <button class="secondary" id="copyAllBtn" disabled>📋 Copy Full Description</button>
+      <button class="primary" id="exportPptBtn" disabled>📥 Download PPTX (Pure Chroma)</button>
+    </div>
+  </div>
+
+  <div id="slidesWrapper" class="slides-wrapper"></div>
+
+  <script>
+    const RASHIS = [
+      { id: 1, hi: "मेष", en: "Aries", color: "लाल / नारंगी", num: "1, 9" },
+      { id: 2, hi: "वृषभ", en: "Taurus", color: "सफेद / क्रीम", num: "2, 6" },
+      { id: 3, hi: "मिथुन", en: "Gemini", color: "हरा", num: "3, 5" },
+      { id: 4, hi: "कर्क", en: "Cancer", color: "दूधिया सफेद", num: "2, 4" },
+      { id: 5, hi: "सिंह", en: "Leo", color: "सुनहरा / नारंगी", num: "1, 5" },
+      { id: 6, hi: "कन्या", en: "Virgo", color: "हल्का हरा", num: "5, 6" },
+      { id: 7, hi: "तुला", en: "Libra", color: "गुलाबी / सफेद", num: "6, 7" },
+      { id: 8, hi: "वृश्चिक", en: "Scorpio", color: "गहरा लाल", num: "8, 9" },
+      { id: 9, hi: "धनु", en: "Sagittarius", color: "पीला", num: "3, 9" },
+      { id: 10, hi: "मकर", en: "Capricorn", color: "नीला / स्लेटी", num: "4, 8" },
+      { id: 11, hi: "कुंभ", en: "Aquarius", color: "आसमानी / नीला", num: "8, 11" },
+      { id: 12, hi: "मीन", en: "Pisces", color: "केसरिया / पीला", num: "3, 7" }
+    ];
+
+    const MOON_DATA = {
+      1: {
+        score: 88,
+        health: "मानसिक चिंताओं और थकान से मुक्ति मिलेगी, ऊर्जा बनी रहेगी।",
+        wealth: "कार्यक्षेत्र में मान-सम्मान बढ़ेगा और रुके काम पूरे होंगे।",
+        family: "घर में सुख-आनंद रहेगा, किसी खास उपहार की प्राप्ति संभव है।",
+        upay: "माथे पर चंदन या केसर का तिलक लगाएं"
+      },
+      2: {
+        score: 52,
+        health: "आंखों या गले से जुड़ी हल्की परेशानी से बचें, खानपान सादा रखें।",
+        wealth: "अनावश्यक खर्चों पर नियंत्रण रखें, निवेश में जल्दबाजी न करें।",
+        family: "वाणी पर संयम रखें ताकि परिजनों से मनमुटाव न हो।",
+        upay: "घर से निकलने से पहले मीठा दही या मिश्री खाएं"
+      },
+      3: {
+        score: 84,
+        health: "स्वास्थ्य उत्तम रहेगा और आत्मविश्वास में वृद्धि होगी।",
+        wealth: "व्यापार और नौकरी में नए अवसर व धन लाभ के प्रबल योग हैं।",
+        family: "भाई-बहनों व मित्रों का पूरा सहयोग मिलेगा।",
+        upay: "हनुमान जी का स्मरण करें और किसी जरूरतमंद की मदद करें"
+      },
+      4: {
+        score: 48,
+        health: "मानसिक तनाव और बेचैनी से बचें, पर्याप्त आराम करें।",
+        wealth: "कामकाज में बाधा आ सकती है, धैर्य से निर्णय लें।",
+        family: "माता के स्वास्थ्य का ध्यान रखें और घर में शांति बनाए रखें।",
+        upay: "माता का आशीर्वाद लें और शिवलिंग पर शुद्ध जल चढ़ाएं"
+      },
+      5: {
+        score: 55,
+        health: "पेट से जुड़ी समस्या से बचें, बाहर के खाने से परहेज करें।",
+        wealth: "कार्यों में थोड़ी देरी हो सकती है, योजना बनाकर आगे बढ़ें।",
+        family: "संतान या जीवनसाथी की बात ध्यान से सुनें।",
+        upay: "भगवान गणेश को प्रणाम करें और 'ॐ गं गणपतये नमः' बोलें"
+      },
+      6: {
+        score: 82,
+        health: "पुराने रोगों से राहत मिलेगी और शरीर में स्फूर्ति रहेगी।",
+        wealth: "शत्रुओं पर विजय मिलेगी और अटका हुआ धन प्राप्त हो सकता है।",
+        family: "परिवार में आपकी सलाह को महत्व मिलेगा।",
+        upay: "पक्षियों को दाना डालें या गाय को रोटी खिलाएं"
+      },
+      7: {
+        score: 86,
+        health: "मन प्रसन्न रहेगा और सेहत अच्छी बनी रहेगी।",
+        wealth: "साझेदारी के व्यापार और यात्रा से अच्छा लाभ होगा।",
+        family: "दांपत्य जीवन मधुर रहेगा और अपनों के साथ अच्छा समय बीतेगा।",
+        upay: "घर के मंदिर में घी का दीपक जलाएं"
+      },
+      8: {
+        score: 35,
+        health: "वाहन सावधानी से चलाएं और सेहत के प्रति लापरवाही न बरतें।",
+        wealth: "बड़े आर्थिक लेनदेन या नए जोखिम से आज बचना बेहतर है।",
+        family: "विवादों से दूर रहें और शांत रहकर दिन बिताएं।",
+        upay: "'ॐ नमः शिवाय' का 11 बार जाप करें और सफेद वस्तु का दान करें"
+      },
+      9: {
+        score: 58,
+        health: "हल्की थकान महसूस हो सकती है, योग व ध्यान लाभकारी रहेगा।",
+        wealth: "भाग्य का साथ सामान्य रहेगा, मेहनत पर भरोसा रखें।",
+        family: "बड़ों के मार्गदर्शन से उलझनें सुलझेंगी।",
+        upay: "बड़े-बुजुर्गों का सम्मान करें और पीले फल का दान करें"
+      },
+      10: {
+        score: 85,
+        health: "ऊर्जा और उत्साह बना रहेगा, सेहत अनुकूल है।",
+        wealth: "करियर में बड़ी सफलता, पदोन्नति या प्रशंसा के योग हैं।",
+        family: "पिता व वरिष्ठजनों का सहयोग प्राप्त होगा।",
+        upay: "उगते सूर्य को तांबे के लोटे से जल अर्पित करें"
+      },
+      11: {
+        score: 92,
+        health: "स्वास्थ्य शानदार रहेगा और मन में सकारात्मकता रहेगी।",
+        wealth: "आय के नए स्रोत बनेंगे और मनचाहा लाभ प्राप्त होगा।",
+        family: "मित्रों व परिवार के साथ उत्सव या शुभ समाचार का योग है।",
+        upay: "तुलसी के पौधे में जल चढ़ाएं और आभार व्यक्त करें"
+      },
+      12: {
+        score: 42,
+        health: "नींद की कमी या आंखों में थकान हो सकती है, विश्राम करें।",
+        wealth: "व्यर्थ की भागदौड़ और अचानक खर्च बढ़ सकते हैं।",
+        family: "छोटी बातों को तूल न दें, धैर्य बनाए रखें।",
+        upay: "शाम को घर में कपूर जलाएं और शांत मन से ध्यान करें"
+      }
+    };
+
+    const VAAR_DATA = [
+      { hi: "रविवार", upay: "सूर्य देव को प्रणाम करें।" },
+      { hi: "सोमवार", upay: "भगवान शिव का स्मरण करें।" },
+      { hi: "मंगलवार", upay: "हनुमान चालीसा का पाठ करें।" },
+      { hi: "बुधवार", upay: "भगवान गणेश का ध्यान करें।" },
+      { hi: "गुरुवार", upay: "भगवान विष्णु का स्मरण करें।" },
+      { hi: "शुक्रवार", upay: "माता लक्ष्मी की आराधना करें।" },
+      { hi: "शनिवार", upay: "शनि देव का स्मरण व शांत मन रखें।" }
+    ];
+
+    const MONTHS_HI = ["जनवरी","फरवरी","मार्च","अप्रैल","मई","जून","जुलाई","अगस्त","सितम्बर","अक्टूबर","नवम्बर","दिसम्बर"];
+
+    let transitRows = [];
+    let currentCards = [];
+    let currentSummary = null;
+
+    function getHouse(planetRashi, lagnaRashi) {
+      let h = (planetRashi - lagnaRashi) + 1;
+      if (h <= 0) h += 12;
+      return h;
+    }
+
+    function parseExcelDate(val) {
+      if (val instanceof Date && !isNaN(val)) return val;
+      if (typeof val === 'number') {
+        const utcDays = Math.floor(val - 25569);
+        return new Date(utcDays * 86400 * 1000);
+      }
+      if (typeof val === 'string') {
+        const s = val.trim();
+        if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
+          const [d, m, y] = s.split('/').map(Number);
+          return new Date(y, m - 1, d);
+        }
+        const parsed = new Date(s);
+        if (!isNaN(parsed)) return parsed;
+      }
+      return null;
+    }
+
+    function formatHindiDate(dt) {
+      const d = String(dt.getDate()).padStart(2, '0');
+      const m = MONTHS_HI[dt.getMonth()];
+      const y = dt.getFullYear();
+      const vaar = VAAR_DATA[dt.getDay()].hi;
+      return `${d} ${m} ${y}, ${vaar}`;
+    }
+
+    document.getElementById('excelInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array', cellDates: true });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(ws);
+        transitRows = json.map(r => ({
+          dateObj: parseExcelDate(r.Date),
+          Sun: Number(r.Sun),
+          Moon: Number(r.Moon),
+          Mars: Number(r.Mars),
+          Mercury: Number(r.Mercury),
+          Jupiter: Number(r.Jupiter),
+          Venus: Number(r.Venus),
+          Saturn: Number(r.Saturn),
+          Rahu: Number(r.Rahu),
+          Ketu: Number(r.Ketu)
+        })).filter(r => r.dateObj);
+
+        const sel = document.getElementById('dateSelect');
+        sel.innerHTML = '';
+        transitRows.forEach((row, idx) => {
+          const opt = document.createElement('option');
+          opt.value = idx;
+          const d = String(row.dateObj.getDate()).padStart(2,'0');
+          const m = String(row.dateObj.getMonth()+1).padStart(2,'0');
+          opt.textContent = `${d}/${m}/${row.dateObj.getFullYear()} (${VAAR_DATA[row.dateObj.getDay()].hi})`;
+          sel.appendChild(opt);
+        });
+        sel.disabled = false;
+        document.getElementById('exportPptBtn').disabled = false;
+        document.getElementById('copyAllBtn').disabled = false;
+        renderDay(0);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    document.getElementById('dateSelect').addEventListener('change', (e) => {
+      renderDay(Number(e.target.value));
+    });
+
+    document.getElementById('ratioSelect').addEventListener('change', (e) => {
+      document.body.className = `ratio-${e.target.value}`;
+    });
+
+    function renderDay(idx) {
+      const row = transitRows[idx];
+      if (!row) return;
+      const dateStr = formatHindiDate(row.dateObj);
+      const vaarInfo = VAAR_DATA[row.dateObj.getDay()];
+
+      currentCards = RASHIS.map(rashi => {
+        const moonH = getHouse(row.Moon, rashi.id);
+        const sunH = getHouse(row.Sun, rashi.id);
+        const marsH = getHouse(row.Mars, rashi.id);
+        const jupH = getHouse(row.Jupiter, rashi.id);
+
+        const base = MOON_DATA[moonH];
+        let score = base.score;
+        let wealth = base.wealth;
+        let health = base.health;
+
+        if ([3, 6, 10, 11].includes(sunH)) score += 4;
+        if ([2, 5, 7, 9, 11].includes(jupH)) {
+          score += 5;
+          wealth += " गुरु की कृपा से सही निर्णय ले पाएंगे।";
+        }
+        if ([8, 12].includes(marsH)) {
+          score -= 4;
+          health += " क्रोध और जल्दबाजी से बचें।";
+        }
+
+        const smartUpay = `${base.upay} और ${vaarInfo.upay}`;
+
+        return {
+          ...rashi,
+          dateStr,
+          moonH,
+          score,
+          health,
+          wealth,
+          family: base.family,
+          upay: smartUpay
+        };
+      });
+
+      const sorted = [...currentCards].sort((a, b) => b.score - a.score || a.id - b.id);
+      const lucky3 = sorted.slice(0, 3).map(x => x.hi);
+      const caution3 = sorted.slice(-3).reverse().map(x => x.hi);
+
+      currentSummary = { dateStr, lucky3, caution3 };
+
+      const wrapper = document.getElementById('slidesWrapper');
+      wrapper.innerHTML = '';
+
+      // 1. Summary Slide
+      const sumDiv = document.createElement('div');
+      sumDiv.className = 'slide-container';
+      const sumText = `आज का राशिफल (${dateStr})\n\nआज की 3 सबसे भाग्यशाली राशियाँ:\n${lucky3.join(' | ')}\n\nविशेष सावधानी रखने वाली राशियाँ:\n${caution3.join(' | ')}`;
+      sumDiv.innerHTML = `
+        <div class="slide">
+          <div class="slide-content chroma-text">
+            <div class="date-badge">${dateStr}</div>
+            <h2 class="rashi-title">आज के मुख्य आकर्षण</h2>
+            <div class="summary-section">
+              <h3>सबसे भाग्यशाली राशियाँ</h3>
+              <p>${lucky3.join(' • ')}</p>
+            </div>
+            <div class="summary-section">
+              <h3>विशेष सावधानी</h3>
+              <p>${caution3.join(' • ')}</p>
+            </div>
+          </div>
+        </div>
+        <button class="copy-btn" onclick="copyText(this, \`${sumText.replace(/`/g, '')}\`)">📋 Copy Summary</button>
+      `;
+      wrapper.appendChild(sumDiv);
+
+      // 2. 12 Rashi Slides
+      currentCards.forEach(c => {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'slide-container';
+        const copyContent = `${c.id}. ${c.hi} राशि (${c.dateStr})\nस्वास्थ्य: ${c.health}\nधन/व्यापार: ${c.wealth}\nपरिवार: ${c.family}\nआज का उपाय: ${c.upay}\nशुभ अंक: ${c.num} | शुभ रंग: ${c.color}`;
+
+        cardDiv.innerHTML = `
+          <div class="slide">
+            <div class="slide-content chroma-text">
+              <div class="date-badge">${c.dateStr}</div>
+              <h2 class="rashi-title">${c.id}. ${c.hi} राशि</h2>
+              <div class="points-box">
+                <div class="point-row"><strong>स्वास्थ्य:</strong> ${c.health}</div>
+                <div class="point-row"><strong>धन/व्यापार:</strong> ${c.wealth}</div>
+                <div class="point-row"><strong>परिवार:</strong> ${c.family}</div>
+              </div>
+              <div class="upay-box"><strong>आज का उपाय:</strong> ${c.upay}</div>
+              <div class="lucky-row">
+                <span>शुभ अंक: ${c.num}</span>
+                <span>|</span>
+                <span>शुभ रंग: ${c.color}</span>
+              </div>
+            </div>
+          </div>
+          <button class="copy-btn" onclick="copyText(this, \`${copyContent.replace(/`/g, '')}\`)">📋 Copy Text</button>
+        `;
+        wrapper.appendChild(cardDiv);
+      });
+    }
+
+    window.copyText = function(btn, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const old = btn.textContent;
+        btn.textContent = "✅ Copied!";
+        setTimeout(() => btn.textContent = old, 1500);
+      });
+    };
+
+    document.getElementById('copyAllBtn').addEventListener('click', () => {
+      if (!currentSummary) return;
+      let full = `दैनिक राशिफल — ${currentSummary.dateStr}\n\n`;
+      full += `भाग्यशाली राशियाँ: ${currentSummary.lucky3.join(', ')}\n`;
+      full += `विशेष सावधानी: ${currentSummary.caution3.join(', ')}\n\n`;
+      currentCards.forEach(c => {
+        full += `${c.id}. ${c.hi} राशि:\n`;
+        full += `• स्वास्थ्य: ${c.health}\n`;
+        full += `• धन/व्यापार: ${c.wealth}\n`;
+        full += `• परिवार: ${c.family}\n`;
+        full += `• उपाय: ${c.upay}\n`;
+        full += `• शुभ अंक: ${c.num} | शुभ रंग: ${c.color}\n\n`;
+      });
+      full += `#AajKaRashifal #DailyHoroscope #VedicAstrology`;
+      navigator.clipboard.writeText(full).then(() => {
+        const btn = document.getElementById('copyAllBtn');
+        btn.textContent = "✅ Full Description Copied!";
+        setTimeout(() => btn.textContent = "📋 Copy Full Description", 1800);
+      });
+    });
+
+    // PPTX Export: 100% PowerPoint Compatible (No corrupt shadow, Safe filename)
+    document.getElementById('exportPptBtn').addEventListener('click', async () => {
+      if (!currentSummary) return;
+      const pptx = new PptxGenJS();
+      const isVertical = document.getElementById('ratioSelect').value === '9-16';
+      if (isVertical) {
+        pptx.defineLayout({ name: 'VERT', width: 5.625, height: 10 });
+        pptx.layout = 'VERT';
+      } else {
+        pptx.layout = 'LAYOUT_16x9';
+      }
+
+      const W = isVertical ? 5.625 : 10;
+      const font = 'Nirmala UI';
+
+      // Summary Slide
+      const s0 = pptx.addSlide();
+      s0.background = { color: "00FF00" };
+      s0.addText(currentSummary.dateStr, {
+        x: 0.3, y: isVertical ? 0.9 : 0.35, w: W - 0.6, h: 0.6,
+        align: 'center', valign: 'middle', fontFace: font, fontSize: 24, color: 'FFF3B0', bold: true
+      });
+      s0.addText("आज के मुख्य आकर्षण", {
+        x: 0.3, y: isVertical ? 1.7 : 1.05, w: W - 0.6, h: 0.75,
+        align: 'center', valign: 'middle', fontFace: font, fontSize: isVertical ? 30 : 34, color: 'FFD166', bold: true
+      });
+      s0.addText(`सबसे भाग्यशाली राशियाँ\n${currentSummary.lucky3.join('  •  ')}`, {
+        x: 0.4, y: isVertical ? 3.1 : 2.1, w: W - 0.8, h: 1.4,
+        align: 'center', valign: 'middle', fontFace: font, fontSize: 22, color: 'FFFFFF', bold: true
+      });
+      s0.addText(`विशेष सावधानी\n${currentSummary.caution3.join('  •  ')}`, {
+        x: 0.4, y: isVertical ? 5.0 : 3.7, w: W - 0.8, h: 1.4,
+        align: 'center', valign: 'middle', fontFace: font, fontSize: 22, color: 'FFFFFF', bold: true
+      });
+
+      // 12 Rashi Slides
+      currentCards.forEach(c => {
+        const s = pptx.addSlide();
+        s.background = { color: "00FF00" };
+
+        s.addText(c.dateStr, {
+          x: 0.3, y: isVertical ? 0.55 : 0.2, w: W - 0.6, h: 0.55,
+          align: 'center', valign: 'middle', fontFace: font, fontSize: 22, color: 'FFF3B0', bold: true
+        });
+
+        s.addText(`${c.id}. ${c.hi} राशि`, {
+          x: 0.3, y: isVertical ? 1.2 : 0.8, w: W - 0.6, h: 0.65,
+          align: 'center', valign: 'middle', fontFace: font, fontSize: isVertical ? 30 : 34, color: 'FFD166', bold: true
+        });
+
+        const bodyText = [
+          { text: "स्वास्थ्य: ", options: { bold: true, color: "FFD166" } },
+          { text: c.health + "\n\n", options: { bold: true, color: "FFFFFF" } },
+          { text: "धन/व्यापार: ", options: { bold: true, color: "FFD166" } },
+          { text: c.wealth + "\n\n", options: { bold: true, color: "FFFFFF" } },
+          { text: "परिवार: ", options: { bold: true, color: "FFD166" } },
+          { text: c.family, options: { bold: true, color: "FFFFFF" } }
+        ];
+        s.addText(bodyText, {
+          x: 0.35, y: isVertical ? 2.05 : 1.5, w: W - 0.7, h: isVertical ? 4.4 : 2.45,
+          align: 'center', valign: 'middle', fontFace: font, fontSize: isVertical ? 18 : 17.5
+        });
+
+        s.addText(`आज का उपाय: ${c.upay}`, {
+          x: 0.35, y: isVertical ? 6.65 : 4.05, w: W - 0.7, h: isVertical ? 1.2 : 0.7,
+          align: 'center', valign: 'middle', fontFace: font, fontSize: isVertical ? 17.5 : 16.5, color: 'FEF08A', bold: true
+        });
+
+        s.addText(`शुभ अंक: ${c.num}    |    शुभ रंग: ${c.color}`, {
+          x: 0.35, y: isVertical ? 8.15 : 4.85, w: W - 0.7, h: 0.55,
+          align: 'center', valign: 'middle', fontFace: font, fontSize: 18, color: 'FFFFFF', bold: true
+        });
+      });
+
+      const selIdx = Number(document.getElementById('dateSelect').value);
+      const dt = transitRows[selIdx].dateObj;
+      const safeDate = `${String(dt.getDate()).padStart(2,'0')}-${String(dt.getMonth()+1).padStart(2,'0')}-${dt.getFullYear()}`;
+      pptx.writeFile({ fileName: `Rashifal_Chroma_${safeDate}.pptx` });
+    });
+  </script>
+</body>
+</html>
